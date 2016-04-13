@@ -95,7 +95,7 @@ namespace multiverso
             //The elements of talbes will be initialized with 0
             CreateMultiversoParameterTable(kWeightTableId,
                 option_->class_num, option_->dim,
-                multiverso::Type::Float, multiverso::Format::Dense);
+                multiverso::Type::Double, multiverso::Format::Dense);
 
             multiverso::Multiverso::EndConfig();
         }
@@ -152,13 +152,11 @@ namespace multiverso
                     multiverso::Log::Info("LoadOneDataBlockTime:%lfs\n",
                         (clock() - start) / (double)CLOCKS_PER_SEC);
                     PushDataBlock(datablock_queue, data_block);
-
                 }
                 multiverso::Multiverso::EndClock();
             }
 
-            multiverso::Log::Info("Rank %d Pushed %d datablocks\n",
-                process_id_, data_block_count);
+            multiverso::Log::Info("Rank %d Pushed %d datablocks\n", process_id_, data_block_count);
 
             multiverso::Multiverso::EndTrain();
 
@@ -192,12 +190,14 @@ namespace multiverso
                     break;
                 }
             }*/
-            AzDSmat trn_dsm, tst_dsm;
-            AzDvect v_trn_y, v_tst_y;
+            AzDSmat *trn_dsm, *tst_dsm;
+            AzDvect *v_trn_y, *v_tst_y;
+            trn_dsm = new AzDSmat();
+            tst_dsm = new AzDSmat();
+            v_trn_y = new AzDvect();
+            v_tst_y = new AzDvect();
             reader->GetSamples(trn_dsm, tst_dsm, v_trn_y, v_tst_y);
             data_block->AddSamples(trn_dsm, tst_dsm, v_trn_y, v_tst_y);
-
-
         }
 
         void Distributed_svrg::PushDataBlock(

@@ -27,7 +27,7 @@ namespace multiverso
             */
             void ResetSize(int64 size);
 
-            void GetSamples(AzDSmat &trn_dsm, AzDSmat &tst_dsm, AzDvect &v_trn_y, AzDvect &v_tst_y);
+            void GetSamples(AzDSmat *trn_dsm, AzDSmat *tst_dsm, AzDvect *v_trn_y, AzDvect *v_tst_y);
 
         private:
             const Option *option_;

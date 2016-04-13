@@ -14,10 +14,11 @@ Run $./build.sh to build the project.
 
 Run $./example/run.sh to run the project. 
 
-V1.0
+
+V2.0
 ==========
-将svrg串行代码，重构后，放入DMTK平台上运行。主要是把AzsLinear类拆分。其读入参数部分，交给Option类去做，读入数据文件部分则交给Reader类去做。
-代码可以通过编译，但是有运行时有错误。
+规范代码格式，删除多余的头文件、变量等。通过编译。
+在一个进程里只有一个线程trainer的前提下，该代码可以跑多进程。但由于数据没有切分，每个进程跑的数据集是一样的。
 
 
 

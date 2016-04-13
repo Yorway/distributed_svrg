@@ -36,29 +36,25 @@ namespace multiverso
             */
             //void ClearSamples();
 
-            void AddSamples(AzDSmat &trn_dsm, AzDSmat &tst_dsm, AzDvect &v_trn_y, AzDvect &v_tst_y);
-	    void GetSamples(const AzDSmat *trn_dsm, const AzDSmat *tst_dsm, const AzDvect *v_trn_y, const AzDvect *v_tst_y);
+            void AddSamples(AzDSmat *trn_dsm, AzDSmat *tst_dsm, AzDvect *v_trn_y, AzDvect *v_tst_y);
+	        void GetSamples(const AzDSmat **trn_dsm, const AzDSmat **tst_dsm, const AzDvect **v_trn_y, const AzDvect **v_tst_y);
 
         private:
 
-            /*struct feat
+            /*struct Block
             {
-                real data;
-                int index;
+            public:
+                AzDSmat trn_dsm, tst_dsm; 
+                AzDvect v_trn_y, v_tst_y;   
+                Block(AzDSmat trn_dsm, AzDSmat tst_dsm, AzDvect v_trn_y, 
+                    AzDvect v_tst_y) : trn_dsm(trn_dsm), tst_dsm(tst_dsm),
+                    v_trn_y(v_trn_y), v_tst_y(v_tst_y) {}
             };
 
-            std::vector< vector<feat> > samples_; */
+            std::vector<Block> samples_;*/
 
-            //struct Block
-            //{
-                AzDSmat trn_dsm, tst_dsm; 
-                AzDvect v_trn_y, v_tst_y;
-                //Block(AzDSmat trn_dsm, AzDSmat tst_dsm, AzDvect v_trn_y, 
-                    //AzDvect v_tst_y) : trn_dsm(trn_dsm), tst_dsm(tst_dsm),
-                    //v_trn_y(v_trn_y), v_tst_y(v_tst_y) {}
-            //};
-
-            //std::vector<Block> samples_;
+            AzDSmat *trn_dsm, *tst_dsm; 
+            AzDvect *v_trn_y, *v_tst_y;
 
             // No copying allowed
             DataBlock(const DataBlock&);

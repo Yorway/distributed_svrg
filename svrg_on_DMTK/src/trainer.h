@@ -29,8 +29,8 @@ namespace multiverso
         {
         public:
             int64 word_count;
-            Trainer(int trainer_id, Option *option,
-            multiverso::Barrier *barrier, AzsSvrg* AzsSvrg, MemoryManager* memory_mamanger);
+            Trainer(int trainer_id, Option *option, multiverso::Barrier *barrier, 
+                    AzsSvrg* AzsSvrg, MemoryManager* memory_mamanger);
             /*!
             * /brief Train one datablock
             */
@@ -52,23 +52,13 @@ namespace multiverso
             std::vector<real*> blocks;
 
             /*!
-            * \brief Save the input-embedding vectors in file_path
-            * \param file_path
-            * \param is_binary, the format of file
-            * 1 - save the vectors in the binary format,
-            * 2 - save the vectors in the ascii format
-            */
-            //void SaveEmbedding(const char *file_path, bool is_binary);
-            /*!
             * \brief Copy the needed parameter from buffer to blocks
             */
-            //void CopyRow(real* ptr, multiverso::Row<real>& row, int size);
             void CopyParameter();
             /*!
             * \brief Add delta to the parameter stored in the 
             * \buffer and send it to multiverso
             */
-            //void AddRow(real* ptr, int table_id, int row_id, int size);
             void AddDeltaParameter();
 
             //No copying allowed

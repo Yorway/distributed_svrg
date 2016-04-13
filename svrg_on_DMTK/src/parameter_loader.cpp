@@ -32,29 +32,12 @@ namespace multiverso
             ++parse_and_request_count_;
 
             DataBlock *data = reinterpret_cast<DataBlock*>(data_block);
-            //Step 1, compute the parameters which will be used when the trainers begin 
 
-            //WordEmbedding_->PrepareParameter(data);
-
-            //Step 2, Request the parameter
-
-            RequestParameter(data);
-
-            //Step 3, store the needed parameters in data_block
-           
+            // Request the parameter
+            RequestTable(kWeightTableId);           
 
             fprintf(log_file_, "%lf\n", (clock()) / (double)CLOCKS_PER_SEC);
             fflush(log_file_);
-        }
-
-        void ParameterLoader::RequestParameter(DataBlock *data_block) 
-        {
-            //If the data_block is the last one, we need to dump 
-            //the input-embedding weights
-            if (data_block->Type() == DataBlockType::Test)
-                RequestTable(kWeightTableId);
-
-            RequestTable(kWeightTableId);
-        }   
+        } 
     }
 }

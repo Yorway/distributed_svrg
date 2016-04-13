@@ -400,7 +400,7 @@ const int *AzsSvrg::gen_seq(int data_size, AzIntArr &ia) const
 void AzsSvrg::init(DataBlock *data_block)
 {
   /*---  set data info into class variables so that everyone can see ... ---*/
-  data_block->GetSamples(m_trn_x, m_tst_x, v_trn_y, v_tst_y); 
+  data_block->GetSamples(&m_trn_x, &m_tst_x, &v_trn_y, &v_tst_y);
 
   if (option_->do_regress) {
     ia_trn_lab = ia_tst_lab = NULL; 
@@ -412,12 +412,12 @@ void AzsSvrg::init(DataBlock *data_block)
   else {
     /*---  check and set training labels  ---*/
     set_labels(v_trn_y, _ia_trn_lab); 
-    int class_num = _ia_trn_lab.max() + 1; 
+    class_num = _ia_trn_lab.max() + 1; 
 
     /*---  check test labels  ---*/
     set_labels(v_tst_y, _ia_tst_lab); 
     if (_ia_tst_lab.max() >= class_num) {
-      throw new AzException(AzInputError, "AzsLinear::train_test", "test label is out of range"); 
+      throw new AzException(AzInputError, "AzsSvrg::init", "test label is out of range"); 
     }
     AzPrint::writeln(log_out, "#class: ", class_num);
 
@@ -467,7 +467,7 @@ void AzsSvrg::set_labels(const AzDvect *v_mc, AzIntArr &ia_lab) const
 void AzsSvrg::SetWeight(std::vector<real*> &blocks)
 {
   for (int i = 0; i < option_->class_num; ++i)
-    for (int j = 0; j < option_->dim; ++i)
+    for (int j = 0; j < option_->dim; ++j)
       m_w.set(j, i, blocks[i][j]);
 }
 
@@ -475,6 +475,6 @@ void AzsSvrg::GetWeight(std::vector<real*> &blocks)
 {
 
   for (int i = 0; i < option_->class_num; ++i)
-    for (int j = 0; j < option_->dim; ++i)
+    for (int j = 0; j < option_->dim; ++j)
       blocks[i][j] = m_w.get(j, i);
 }

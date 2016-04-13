@@ -47,7 +47,7 @@ namespace multiverso
             //One trainer only copy a part of parameters
             multiverso::Log::Debug("Rank %d Train %d Copyparameter Begin TrainIteration%d ...\n",
                 process_id_, trainer_id_, train_count_);
-	    AzsSvrg_->init(data);
+	        AzsSvrg_->init(data);
             CopyParameter();
 
             multiverso::Log::Debug("Rank %d Train %d Copyparameter end TrainIteration%d ...\n",
@@ -67,12 +67,6 @@ namespace multiverso
                 process_id_, trainer_id_, train_count_);
             //Step 3, After finishing training, add the delta of parameters to multiverso
             AddDeltaParameter();
-
-			//If the data_block is the last one,Dump the input-embedding weights 
-			//if (data->Type() == DataBlockType::Test && trainer_id_ == 0)
-			//{
-				//SaveEmbedding(option_->output_file, option_->output_binary);
-			//}
 
             if (trainer_id_ == 0)
             {
@@ -138,7 +132,9 @@ namespace multiverso
 
             //Return all the memory blocks
             memory_mamanger_->ReturnBlocks(blocks);
+			blocks.clear();
             memory_mamanger_->ReturnBlocks(blocks_get);
+			blocks_get.clear();
         }
     }
 }

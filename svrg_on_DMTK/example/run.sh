@@ -1,2 +1,2 @@
-mpiexec -n 1 ../bin/svrg @covtype.param
+mpiexec -n 4 ../bin/svrg @covtype.param
 

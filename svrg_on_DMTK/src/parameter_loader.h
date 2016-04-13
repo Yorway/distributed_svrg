@@ -12,7 +12,7 @@
 #include "AzsSvrg.hpp"
 #include "log.h"
 
-    class AzsSvrg;
+class AzsSvrg;
 namespace multiverso
 {
     namespace svrg
@@ -37,13 +37,7 @@ namespace multiverso
             int parse_and_request_count_;
             clock_t start_;
             FILE* log_file_;
-            /*!
-            * \brief Request the parameters from multiverso server to local buffer
-            * \param data_block which is pushed in
-            * \param input_nodes stores the input words'index
-            * \param output_nodes stores the output words'index
-            */
-            void RequestParameter(DataBlock *data_block);
+
             //No copying allowed
             ParameterLoader(const ParameterLoader&);
             void operator=(const ParameterLoader&);

@@ -35,12 +35,10 @@ namespace multiverso
             int num_servers, num_aggregator, lock_option, num_lock, max_delay;
             //int64 data_block_size;
             //int64 max_preload_data_size;
-	    //to do: provide azp.vInt64 interface
+	        //to do: provide azp.vInt64 interface
             int data_block_size;
             int max_preload_data_size;
-
-            //double init_learning_rate;
-
+            
             int dim;
             int class_num;
 

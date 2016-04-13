@@ -16,7 +16,7 @@ namespace multiverso
             epoch = 1;
             data_block_size = 2000000000;
             max_preload_data_size = 2000000000;
-            //init_learning_rate = static_cast<real>(0.025);
+
             //multiverso config
             num_servers = 0;
             num_aggregator = 1; 
@@ -44,13 +44,13 @@ namespace multiverso
         #define kw_lock_option "lock_option="
         #define kw_num_lock "num_lock="
         #define kw_max_delay "max_delay="
-        #define kw_data_block_size "data_block_size"
+        #define kw_data_block_size "data_block_size="
         #define kw_max_preload_data_size "max_preload_data_size="
         #define kw_init_learning_rate "init_learning_rate="
         #define kw_is_pipeline "pipeline"
 
-        #define kw_dim "dim"
-        #define kw_class_num "class_num"
+        #define kw_dim "dim="
+        #define kw_class_num "class_num="
         /*--------------------------------------------------------*/
         void Option::resetParam(AzParam &azp)
         {
@@ -103,7 +103,6 @@ namespace multiverso
             o.printV<int>(kw_max_delay, max_delay);
             o.printV<int>(kw_data_block_size, data_block_size);
             o.printV<int>(kw_max_preload_data_size, max_preload_data_size);
-            //o.printV<double>(kw_init_learning_rate, init_learning_rate);
             o.printSw(kw_is_pipeline, is_pipeline);
 
             o.printV<int>(kw_dim, dim);
