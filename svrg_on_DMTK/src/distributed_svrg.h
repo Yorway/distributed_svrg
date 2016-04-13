@@ -68,7 +68,7 @@ namespace multiverso
             * \brief Complete the train task with multiverso
             */
             void Train(int argc, char *argv[]);
-            void TrainNeuralNetwork();
+            void TrainModel();
             /*!
             * \brief Create a new table in the multiverso
             */

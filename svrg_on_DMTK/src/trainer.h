@@ -41,7 +41,6 @@ namespace multiverso
             int process_id_;
             int trainer_id_;
             Option *option_;
-            real *hidden_act_, *hidden_err_;
             AzsSvrg* AzsSvrg_;
             multiverso::Barrier *barrier_;
             MemoryManager* memory_mamanger_;

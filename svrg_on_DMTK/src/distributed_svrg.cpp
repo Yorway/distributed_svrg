@@ -8,7 +8,7 @@ namespace multiverso
         {
             g_log_suffix = GetSystemTime();
             srand(static_cast<unsigned int>(time(NULL)));
-	    option_ = new (std::nothrow)Option();
+            option_ = new (std::nothrow)Option();
             assert(option_ != nullptr);
             //Parse argument and store them in option
             if (argc < 2) {
@@ -54,25 +54,25 @@ namespace multiverso
             config.num_servers = option_->num_servers;
             config.num_aggregator = option_->num_aggregator;
             config.is_pipeline = option_->is_pipeline;
-            config.lock_option =
-                static_cast<multiverso::LockOption>(option_->lock_option);
+            config.lock_option = static_cast<multiverso::LockOption>(option_->lock_option);
             config.num_lock = option_->num_lock;
 
             //Step3, Init the environment of multiverso
-            multiverso::Multiverso::Init(trainers, parameter_loader,
-                config, &argc, &argv);
+            multiverso::Multiverso::Init(trainers, parameter_loader, config, &argc, &argv);
 
             char log_name[100];
             sprintf(log_name, "log%s.txt", g_log_suffix.c_str());
             multiverso::Log::ResetLogFile(log_name);
+
             //Mark the node machine number
             process_id_ = multiverso::Multiverso::ProcessRank();
+
             //Step 4, prepare the sever/aggregator/cache Table for parametertable(3 or 5) 
             //and initialize the severtable for inputvector
             PrepareMultiversoParameterTables();
             
             //Step 5, start the Train of NN
-            TrainNeuralNetwork();
+            TrainModel();
 
             delete barrier;
             delete memory_mamanger;
@@ -128,11 +128,14 @@ namespace multiverso
 #endif  
         }
 
-        void Distributed_svrg::TrainNeuralNetwork()
+        void Distributed_svrg::TrainModel()
         {
             std::queue<DataBlock*> datablock_queue;
-            int data_block_count = 0;           
-            int64 file_size = GetFileSize(option_->s_train_x_fn.c_str());
+            int data_block_count = 0;
+
+            char file_x[200];
+            sprintf(file_x, "%s_%d", option_->s_train_x_fn.c_str(), process_id_); 
+            int64 file_size = GetFileSize(file_x);
             multiverso::Log::Info("train-file-size:%lld, data_block_size:%lld\n",
                 file_size, option_->data_block_size);
             start_ = clock();

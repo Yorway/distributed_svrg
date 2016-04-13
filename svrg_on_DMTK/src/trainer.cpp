@@ -47,6 +47,7 @@ namespace multiverso
             //One trainer only copy a part of parameters
             multiverso::Log::Debug("Rank %d Train %d Copyparameter Begin TrainIteration%d ...\n",
                 process_id_, trainer_id_, train_count_);
+
 	        AzsSvrg_->init(data);
             CopyParameter();
 
@@ -97,7 +98,7 @@ namespace multiverso
             for (int i = 0; i < option_->class_num; ++i) {
                 Row<real>* row = static_cast<Row<real>*>(table->GetRow(i));
                 for (int j = 0; j < option_->dim; ++j)
-                    blocks[i][j] = row->At(i);
+                    blocks[i][j] = row->At(j);
             }
 
             AzsSvrg_->SetWeight(blocks);
@@ -132,9 +133,9 @@ namespace multiverso
 
             //Return all the memory blocks
             memory_mamanger_->ReturnBlocks(blocks);
-			blocks.clear();
+            blocks.clear();
             memory_mamanger_->ReturnBlocks(blocks_get);
-			blocks_get.clear();
+            blocks_get.clear();
         }
     }
 }

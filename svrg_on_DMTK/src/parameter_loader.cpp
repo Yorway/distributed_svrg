@@ -31,8 +31,6 @@ namespace multiverso
                 multiverso::Multiverso::ProcessRank(), parse_and_request_count_);
             ++parse_and_request_count_;
 
-            DataBlock *data = reinterpret_cast<DataBlock*>(data_block);
-
             // Request the parameter
             RequestTable(kWeightTableId);           
 

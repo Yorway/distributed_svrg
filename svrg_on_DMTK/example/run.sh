@@ -1,2 +1,3 @@
-mpiexec -n 4 ../bin/svrg @covtype.param
+#gdb --args
+mpiexec --machinefile host.txt ../bin/svrg @covtype.param
 

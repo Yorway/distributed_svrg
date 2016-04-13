@@ -8,7 +8,7 @@ namespace multiverso
         {
             byte_count_ = 0;
             byte_size_ = size;
-        }      
+        }    
 
         void Reader::GetSamples(AzDSmat *trn_dsm, AzDSmat *tst_dsm, AzDvect *v_trn_y, AzDvect *v_tst_y) 
         {      
@@ -16,10 +16,18 @@ namespace multiverso
             AzSvDataS *trn_ds, *tst_ds;
             trn_ds = new AzSvDataS();
             tst_ds = new AzSvDataS(); 
+
+            char file_x[200], file_tar[200];
+
             AzTimeLog::print("Reading training data ... ", log_out); 
-            trn_ds->read(option_->s_train_x_fn.c_str(), option_->s_train_tar_fn.c_str()); 
+            sprintf(file_x, "%s_%d", option_->s_train_x_fn.c_str(), multiverso::Multiverso::ProcessRank());
+            sprintf(file_tar, "%s_%d", option_->s_train_tar_fn.c_str(), multiverso::Multiverso::ProcessRank());
+            trn_ds->read(file_x, file_tar); 
+            
             AzTimeLog::print("Reading test data ... ", log_out); 
-            tst_ds->read(option_->s_test_x_fn.c_str(), option_->s_test_tar_fn.c_str());
+            sprintf(file_x, "%s_%d", option_->s_test_x_fn.c_str(), multiverso::Multiverso::ProcessRank());
+            sprintf(file_tar, "%s_%d", option_->s_test_tar_fn.c_str(), multiverso::Multiverso::ProcessRank());
+            tst_ds->read(file_x, file_tar);
 
             if (!option_->do_no_intercept) { /* append a feature with a constant 1 */
                 AzTimeLog::print("Adding a constant feature ...", log_out); 
