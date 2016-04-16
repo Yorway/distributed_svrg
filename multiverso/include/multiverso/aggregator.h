@@ -11,6 +11,8 @@
 #include <mutex>
 #include <condition_variable>
 
+#include <ctime>
+
 #include "meta.h"
 
 namespace zmq
@@ -82,6 +84,10 @@ namespace multiverso
 
         /*! \brief Wait until all client finish sync up */
         void Wait();
+
+        // Get the fastest and the slowest clocks of all processes 
+        void Get(int *clock_fastest, int *clock_slowest, int *clock_self, double *elapsed_time);
+
     private:
         /*! \brief Entrance function of aggregator threads */
         void StartThread();
@@ -103,6 +109,8 @@ namespace multiverso
         std::condition_variable sync_cv_;
         bool sync_;
 
+        int clock_fastest_, clock_slowest_, clock_self_;
+        double elapsed_time_;
         // No copying allowed
         Aggregator(const Aggregator&);
         void operator=(const Aggregator&);

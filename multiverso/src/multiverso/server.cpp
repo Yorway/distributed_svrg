@@ -274,6 +274,8 @@ namespace multiverso
         {
             clock_msg_[src] = msg_pack;
             clocks_[src]++;
+            int clock_fastest = *std::max_element(clocks_.begin(), clocks_.end());
+            int clock_slowest = *std::min_element(clocks_.begin(), clocks_.end());
             int upper_bound =
                 *std::min_element(clocks_.begin(), clocks_.end()) + max_delay_;
             for (int worker = 0; worker < worker_proc_count_; ++worker)
@@ -281,6 +283,12 @@ namespace multiverso
                 if (clocks_[worker] <= upper_bound && clock_msg_[worker] != nullptr)
                 {
                     MsgPack *reply = clock_msg_[worker]->CreateReplyMsgPack();
+                    zmq::message_t *msg = new zmq::message_t(3 * sizeof(int));
+                    int *buffer = static_cast<int*>(msg->data());
+                    buffer[0] = clock_fastest;
+                    buffer[1] = clock_slowest;
+                    buffer[2] = clocks_[worker];
+                    reply->Push(msg);
                     reply->Send(router_);
                     delete reply;
                     clock_msg_[worker] = nullptr;

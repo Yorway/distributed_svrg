@@ -38,6 +38,7 @@ namespace multiverso
     std::vector<MsgPack*> Multiverso::row_config_;
     std::vector<int> Multiverso::row_config_size_;
     int Multiverso::row_config_count_ = 0;
+
     //-- End of static member definition area --------------------------------/
 
 
@@ -404,5 +405,10 @@ namespace multiverso
             for (auto tag : data_tag_) if (!tag) return false;
             return true;
         });
+    }
+
+    void Multiverso::GetClock(int *clock_fastest, int *clock_slowest, int *clock_self, double *elapsed_time)
+    {
+        aggregator_->Get(clock_fastest, clock_slowest, clock_self, elapsed_time);
     }
 }

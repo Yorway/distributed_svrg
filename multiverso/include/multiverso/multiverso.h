@@ -227,6 +227,8 @@ namespace multiverso
         static void Wait();
         // -- END: Data API code area --------------------------------------- //
 
+        static void GetClock(int *clock_fastest, int *clock_slowest, int *clock_self, double *elapsed_time);
+
     private:
         static void FlushSetServerRow();
         static void AddToServerPtr(

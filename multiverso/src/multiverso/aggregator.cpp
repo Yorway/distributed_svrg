@@ -19,7 +19,7 @@ namespace multiverso
 {
     Aggregator::Aggregator(int num_threads, int num_trainers)
         : done_(false), num_threads_(num_threads),
-        num_trainers_(num_trainers), thread_counter_(0)
+        num_trainers_(num_trainers), thread_counter_(0), clock_fastest_(0), clock_slowest_(0)
     {
         barrier_ = new Barrier(num_threads_);
         for (int i = 0; i < num_threads; ++i)
@@ -204,7 +204,15 @@ namespace multiverso
             Multiverso::ProcessRank(), 0);
         msg->Send(socket);     // Send the clock message
         delete msg;
+        clock_t start = clock();
         MsgPack reply(socket); // Wait for reply
+        elapsed_time_ = (clock() - start) / (double)CLOCKS_PER_SEC;
+        
+        int *buffer = static_cast<int*>(reply.GetMsg(1)->data());
+        clock_fastest_ = buffer[0];
+        clock_slowest_ = buffer[1];
+        clock_self_ = buffer[2];
+        
         // signal conditions variable to awake trainer process
         std::unique_lock<std::mutex> lock(mutex_);
         sync_cv_.notify_all();
@@ -215,5 +223,13 @@ namespace multiverso
     {
         std::unique_lock<std::mutex> lock(mutex_);
         sync_cv_.wait(lock);
+    }
+
+    void Aggregator::Get(int *clock_fastest, int *clock_slowest, int *clock_self, double *elapsed_time)
+    {
+        *clock_fastest = clock_fastest_;
+        *clock_slowest = clock_slowest_;
+        *clock_self = clock_self_;
+        *elapsed_time = elapsed_time_;
     }
 }
