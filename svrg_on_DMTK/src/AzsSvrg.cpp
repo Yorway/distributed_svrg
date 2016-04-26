@@ -26,7 +26,7 @@ void AzsSvrg::_train_test()
   AzsSvrgData_fast prev_fast; 
   AzsSvrgData_compact prev_compact; 
   int ite;
-  for (ite = 0; ite < ite_num; ++ite) {
+  for (ite = 0; ite < ite_num; ite += option_->thread_cnt) {
     if (do_show_timing) AzTimeLog::print("---  iteration#", ite+1, log_out); 
     if (doing_svrg(ite) && (ite-sgd_ite) % svrg_interval == 0) {
       if (do_show_timing) AzTimeLog::print("Computing gradient average ... ", log_out); 
@@ -412,7 +412,8 @@ void AzsSvrg::init(DataBlock *data_block)
   else {
     /*---  check and set training labels  ---*/
     set_labels(v_trn_y, _ia_trn_lab); 
-    class_num = _ia_trn_lab.max() + 1; 
+    //class_num = _ia_trn_lab.max() + 1; 
+	class_num = option_->class_num == 1 ? 2 : option_->class_num;
 
     /*---  check test labels  ---*/
     set_labels(v_tst_y, _ia_tst_lab); 

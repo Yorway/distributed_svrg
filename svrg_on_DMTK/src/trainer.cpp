@@ -15,13 +15,13 @@ namespace multiverso
             process_id_ = -1;   
             start_ = 0;
             train_count_ = 0;
-            if (trainer_id_ == 0)
-            {
+            //if (trainer_id_ == 0)
+            //{
                 //The log which recordes the begin and end time of TrainIteration()
-                char log_name[100];
-                sprintf(log_name, "trainer%s.txt", g_log_suffix.c_str());
-                log_file_ = fopen(log_name, "w");
-            }
+            //    char log_name[100];
+            //    sprintf(log_name, "trainer_%d.txt", /*g_log_suffix.c_str()*/ multiverso::Multiverso::ProcessRank());
+            //    log_file_ = fopen(log_name, "w");
+            //}
         }
 
 
@@ -30,9 +30,9 @@ namespace multiverso
             if (process_id_ == -1)
                 process_id_ = multiverso::Multiverso::ProcessRank();
 
-            if (trainer_id_ == 0)
+            //if (trainer_id_ == 0)
                 //Record the starting time of the Trainiteration  
-                fprintf(log_file_, "%lf\n", (clock()) / (double)CLOCKS_PER_SEC);
+                //fprintf(log_file_, "%lf\n", (clock()) / (double)CLOCKS_PER_SEC);
 
             multiverso::Log::Info("Rank %d Train %d Begin TrainIteration%d ...\n",
                 process_id_, trainer_id_, train_count_);
@@ -48,9 +48,10 @@ namespace multiverso
             multiverso::Log::Debug("Rank %d Train %d Copyparameter Begin TrainIteration%d ...\n",
                 process_id_, trainer_id_, train_count_);
 
-	        AzsSvrg_->init(data);
-            CopyParameter();
-
+	        if (trainer_id_ == 0) {
+                AzsSvrg_->init(data);
+                CopyParameter();
+            }
             multiverso::Log::Debug("Rank %d Train %d Copyparameter end TrainIteration%d ...\n",
                 process_id_, trainer_id_, train_count_);
             //Wait for all the trainers to finish copying parameter
@@ -67,14 +68,16 @@ namespace multiverso
             multiverso::Log::Debug("Rank %d Train %d AddDeltaParameter Begin TrainIteration%d ...\n",
                 process_id_, trainer_id_, train_count_);
             //Step 3, After finishing training, add the delta of parameters to multiverso
-            AddDeltaParameter();
-
             if (trainer_id_ == 0)
+                AddDeltaParameter();
+            barrier_->Wait();
+
+            /*if (trainer_id_ == 0)
             {
                 fprintf(log_file_, "%lf\n",
                     (clock()) / (double)CLOCKS_PER_SEC);
                 fflush(log_file_);
-            }
+            }*/
         }
 
         void Trainer::CopyParameter()
