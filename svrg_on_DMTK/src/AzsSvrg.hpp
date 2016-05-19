@@ -28,6 +28,7 @@
 
 #include "util.h"
 #include "data_block.h"
+#include "barrier.h"
 
 using namespace multiverso;
 using namespace svrg;
@@ -54,6 +55,10 @@ protected:
   
   AzDmat m_w_delta;
   AzDmat m_w_delta_prev; 
+
+  AzsSvrgData_fast prev_fast; 
+  AzsSvrgData_compact prev_compact; 
+  std::mutex mutex_;
 
   /*---  Parameters  ---*/
   /*---  Note: for all numerical values, -1 means "no value" */
@@ -91,7 +96,7 @@ public:
                   const AzDSmat *_m_tst_x, const AzDvect *v_tst_y); /* test data */
   static void printHelp(AzHelp &h);
 
-  void _train_test(); 
+  void _train_test(int trainer_id, multiverso::Barrier *barrier); 
 
   //called in Distributed_svrg. by Yuewei Ming
   void init(DataBlock *data_block);
@@ -116,11 +121,17 @@ protected:
   
   /*---  fast svrg (save derivatives)  ---*/  
   void updateDelta_svrg_fast(int dx, const AzDvect *v_deriv, const AzsSvrgData_fast &prev); 
-  void get_avg_gradient_fast(AzsSvrgData_fast *sd) const; /* output */
+  void get_avg_gradient_fast(AzsSvrgData_fast *sd, /* output */
+                             int trainer_id, 
+                             int thread_cnt, 
+                             multiverso::Barrier *barrier);
 
   /*---  compact svrg (don't save derivatives)  ---*/  
   void updateDelta_svrg_compact(int dx, const AzDvect *v_deriv, const AzsSvrgData_compact &prev); 
-  void get_avg_gradient_compact(AzsSvrgData_compact *sd) const; /* output */
+  void get_avg_gradient_compact(AzsSvrgData_compact *sd, /* output */
+                                int trainer_id, 
+                                int thread_cnt, 
+                                multiverso::Barrier *barrier);
   
   /*---  ---*/
   inline void get_deriv(int dx, AzDvect *v_deriv) const {

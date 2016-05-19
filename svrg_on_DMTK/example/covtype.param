@@ -10,7 +10,7 @@ test_x_fn=data/covtype-tst.x # test data
 test_target_fn=data/covtype-tst.lab  # test labels
 DenseData
 
-threads=18
+threads=1
 epoch=10
 num_servers=0
 num_aggregator=1

@@ -19,26 +19,35 @@
 #include "AzsSvrg.hpp"
 
 /*--------------------------------------------------------*/
-void AzsSvrg::_train_test()
+void AzsSvrg::_train_test(int trainer_id, multiverso::Barrier *barrier)
 {  
   /*---  iterate ... ---*/
   AzTimeLog::print("---  Training begins ... ", log_out); 
-  AzsSvrgData_fast prev_fast; 
-  AzsSvrgData_compact prev_compact; 
+  
+  if (do_compact) {
+    if (trainer_id == 0)
+      prev_compact.m_gavg.reform(m_trn_x->rowNum(), class_num); /* gradient average */
+  } else {
+    if (trainer_id == 0) {
+      prev_fast.m_deriv.reform(class_num, m_trn_x->colNum()); /* derivatives */
+      prev_fast.m_gavg.reform(m_trn_x->rowNum(), class_num); /* gradient average */
+    }
+  }
+
   int ite;
-  for (ite = 0; ite < ite_num; ite += option_->thread_cnt) {
+  for (ite = 0; ite < ite_num; ++ite) {
     if (do_show_timing) AzTimeLog::print("---  iteration#", ite+1, log_out); 
     if (doing_svrg(ite) && (ite-sgd_ite) % svrg_interval == 0) {
       if (do_show_timing) AzTimeLog::print("Computing gradient average ... ", log_out); 
-      if (do_compact) get_avg_gradient_compact(&prev_compact); 
-      else            get_avg_gradient_fast(&prev_fast); 
+      if (do_compact) get_avg_gradient_compact(&prev_compact, trainer_id, option_->thread_cnt, barrier); 
+      else            get_avg_gradient_fast(&prev_fast, trainer_id, option_->thread_cnt, barrier); 
     }  
 
     if (do_show_timing) AzTimeLog::print("Updating weights ... ", log_out); 
     AzIntArr ia_dxs; 
     const int *dxs = gen_seq(dataSize(), ia_dxs);   
     int ix; 
-    for (ix = 0; ix < dataSize(); ++ix) {      
+    for (ix = trainer_id; ix < dataSize(); ix += option_->thread_cnt) {      
       int dx = dxs[ix];  /* data point index */
       AzDvect v_deriv(class_num); 
       get_deriv(dx, &v_deriv); /* compute the derivatives */
@@ -105,23 +114,39 @@ void AzsSvrg::updateDelta_svrg_fast(int dx,
 /* so that gradients with previous weights do not have to be re-computed.       */
 /* This is faster at the expense of using more memory.                          */
 /*------------------------------------------------------------------------------*/ 
-void AzsSvrg::get_avg_gradient_fast(AzsSvrgData_fast *sd) /* output */
-const
+void AzsSvrg::get_avg_gradient_fast(AzsSvrgData_fast *sd, /* output */
+                                    int trainer_id, 
+                                    int thread_cnt, 
+                                    multiverso::Barrier *barrier)
 {
-  int data_size = m_trn_x->colNum(); 
-  sd->m_deriv.reform(class_num, data_size); /* derivatives */
-  sd->m_gavg.reform(m_trn_x->rowNum(), class_num); /* gradient average */
+  if (trainer_id == 0)
+    sd->m_gavg.zeroOut();
+  barrier->Wait();
+
+  AzsSvrgData_fast sd_thread;
+  sd_thread.m_gavg.reform(m_trn_x->rowNum(), class_num); /* thread gradient average */
+
+  int data_size = m_trn_x->colNum();  
   int dx;
-  for (dx = 0; dx < data_size; ++dx) {
+  for (dx = trainer_id; dx < data_size; dx += thread_cnt) {
     get_deriv(dx, sd->m_deriv.col_u(dx)); 
     int cx; 
     for (cx = 0; cx < class_num; ++cx) {
       double my_deriv = sd->m_deriv.get(cx, dx); 
       /*---  add the gradient  ---*/   
-      m_trn_x->add_to(sd->m_gavg.col_u(cx), dx, my_deriv);  /* gavg[,cs] += trn_x[,dx]*my_deriv */          
+      m_trn_x->add_to(sd_thread.m_gavg.col_u(cx), dx, my_deriv);  /* gavg[,cs] += trn_x[,dx]*my_deriv */          
     }
   }
-  sd->m_gavg.divide(data_size);  /* take the average */
+
+  mutex_.lock();
+  for (int cx = 0; cx < class_num; ++cx)
+    sd->m_gavg.col_u(cx)->add(sd_thread.m_gavg.col_u(cx));
+  mutex_.unlock();
+  barrier->Wait();
+
+  if (trainer_id == 0)
+    sd->m_gavg.divide(data_size);  /* take the average */
+  barrier->Wait();
 }
 
 /*----------------------------------------------------------------*/
@@ -149,14 +174,22 @@ void AzsSvrg::updateDelta_svrg_compact(int dx,
 /* compact version: don't keep the derivatives with previous weights.    */
 /* This is slower but uses less memory.                                  */
 /*-----------------------------------------------------------------------*/ 
-void AzsSvrg::get_avg_gradient_compact(AzsSvrgData_compact *sd) /* output */
-const
+void AzsSvrg::get_avg_gradient_compact(AzsSvrgData_compact *sd, /* output */
+                                       int trainer_id, 
+                                       int thread_cnt, 
+                                       multiverso::Barrier *barrier)
 {
-  int data_size = m_trn_x->colNum(); 
-  sd->m_gavg.reform(m_trn_x->rowNum(), class_num); /* gradient average */
-  AzDvect v_deriv(class_num); 
+  if (trainer_id == 0)
+    sd->m_gavg.zeroOut();
+  barrier->Wait();
+
+  AzsSvrgData_compact sd_thread;
+  sd_thread.m_gavg.reform(m_trn_x->rowNum(), class_num); /* thread gradient average */
+
+  AzDvect v_deriv(class_num);
+  int data_size = m_trn_x->colNum();  
   int dx;
-  for (dx = 0; dx < data_size; ++dx) {
+  for (dx = trainer_id; dx < data_size; dx += thread_cnt) {
     get_deriv(dx, &v_deriv); 
     int cx; 
     for (cx = 0; cx < class_num; ++cx) {
@@ -165,12 +198,22 @@ const
 #if 0       
       sd->m_gavg.col_u(cx)->add(m_trn_x->col(dx), my_deriv); /* gavg[,cs] += trn_x[,dx]*my_deriv */
 #else 
-      m_trn_x->add_to(sd->m_gavg.col_u(cx), dx, my_deriv); /* gavg[,cs] += trn_x[,dx]*my_deriv */
+      m_trn_x->add_to(sd_thread.m_gavg.col_u(cx), dx, my_deriv); /* gavg[,cs] += trn_x[,dx]*my_deriv */
 #endif 
     }
   }
-  sd->m_gavg.divide(data_size);  /* take the average */
-  sd->lmod.reset(&m_w, ws); /* save the weights */
+
+  mutex_.lock();
+  for (int cx = 0; cx < class_num; ++cx)
+    sd->m_gavg.col_u(cx)->add(sd_thread.m_gavg.col_u(cx));
+  mutex_.unlock();
+  barrier->Wait();
+  
+  if (trainer_id == 0) {
+    sd->m_gavg.divide(data_size);  /* take the average */
+    sd->lmod.reset(&m_w, ws); /* save the weights */
+  }
+  barrier->Wait();
 }
 
 /*------------------------------------------------------------*/  
@@ -413,7 +456,7 @@ void AzsSvrg::init(DataBlock *data_block)
     /*---  check and set training labels  ---*/
     set_labels(v_trn_y, _ia_trn_lab); 
     //class_num = _ia_trn_lab.max() + 1; 
-	class_num = option_->class_num == 1 ? 2 : option_->class_num;
+	  class_num = option_->class_num == 1 ? 2 : option_->class_num;
 
     /*---  check test labels  ---*/
     set_labels(v_tst_y, _ia_tst_lab); 
@@ -428,12 +471,10 @@ void AzsSvrg::init(DataBlock *data_block)
     ia_tst_lab = &_ia_tst_lab; 
     v_trn_y = v_tst_y = NULL; 
  
-  if (class_num == 2) {
-    AzTimeLog::print("Binary classification ... ", log_out); 
-    class_num = 1; 
-  }
-  
-  
+    if (class_num == 2) {
+      AzTimeLog::print("Binary classification ... ", log_out); 
+      class_num = 1; 
+    }
   }
   /*---  parse parameters  ---*/
   AzParam azp(option_->s_param.c_str()); 
