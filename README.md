@@ -1,6 +1,3 @@
-# distributed_svrg
-
-
 Distributed SVRG
 ==========
 
